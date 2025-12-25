@@ -19,7 +19,7 @@ RESULTS_DIR = "results"
 def banner():
     print("""
 ========================================================
- Shodan Domain Recon
+ 🔍 Shodan Domain Recon
  Passive OSINT | Bug Bounty Oriented
 ========================================================
 """)
@@ -30,22 +30,34 @@ def save(line, f):
     f.write(line + "\n")
 
 
+def normalize_domain(domain):
+    domain = domain.strip().lower()
+    domain = domain.replace("http://", "").replace("https://", "")
+    return domain.rstrip("/")
+
+
 def resolve(hostname):
     try:
         return socket.gethostbyname(hostname)
-    except:
+    except socket.gaierror:
         return None
 
 
 def main(domain):
+    if sys.version_info < (3, 9):
+        print("[!] Python 3.9+ is required")
+        sys.exit(1)
+
     api_key = os.getenv("SHODAN_API_KEY")
     if not api_key:
         print("[!] SHODAN_API_KEY not found in environment variables")
+        print("    export SHODAN_API_KEY='YOUR_API_KEY'")
         sys.exit(1)
 
+    domain = normalize_domain(domain)
     api = shodan.Shodan(api_key)
-    os.makedirs(RESULTS_DIR, exist_ok=True)
 
+    os.makedirs(RESULTS_DIR, exist_ok=True)
     output_file = os.path.join(RESULTS_DIR, f"{domain}.txt")
 
     with open(output_file, "w", encoding="utf-8") as f:
@@ -60,17 +72,17 @@ def main(domain):
         try:
             dns_info = api.dns.domain_info(domain)
             subdomains = dns_info.get("subdomains", [])
-        except Exception as e:
+        except shodan.APIError as e:
             save(f"[!] DNS error: {e}", f)
             subdomains = []
 
-        full_subdomains = [f"{s}.{domain}" for s in subdomains]
+        full_subdomains = sorted({f"{s}.{domain}" for s in subdomains})
         save(f"[+] Subdomains found: {len(full_subdomains)}", f)
 
         for sub in full_subdomains:
             save(f"  - {sub}", f)
 
-        # 2. Resolve subdomains
+        # 2. DNS Resolution
         save("\n[2] DNS Resolution", f)
         save("-" * 80, f)
 
@@ -105,10 +117,13 @@ def main(domain):
                 save(f"[!] Search error: {e}", f)
                 continue
 
-            save(f"[+] Results: {results['total']}", f)
+            save(f"[+] Results returned: {results.get('total', 0)}", f)
 
             for match in results.get("matches", []):
                 ip = match.get("ip_str")
+                if not ip:
+                    continue
+
                 discovered_ips.add(ip)
 
                 save("\n-------------------------------", f)
@@ -137,7 +152,7 @@ def main(domain):
         save("\n[4] Shodan Host Enumeration (IP-based)", f)
         save("-" * 80, f)
 
-        all_ips = set(ip_map.keys()) | discovered_ips
+        all_ips = sorted(set(ip_map.keys()) | discovered_ips)
 
         for ip in all_ips:
             save("\n====================================", f)
@@ -166,7 +181,7 @@ def main(domain):
                 if svc.get("tags"):
                     save(f"  Tags: {', '.join(svc.get('tags'))}", f)
 
-        save("\n[+] Recon completed.", f)
+        save("\n[+] Recon completed successfully.", f)
 
     print(f"\n[✔] Results saved to {output_file}")
 
