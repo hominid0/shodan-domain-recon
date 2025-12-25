@@ -1,7 +1,6 @@
 # 🔍 Shodan Domain Recon
 
 Passive OSINT tool to enumerate all Shodan-indexed information related to a domain.
-
 Designed for bug bounty, responsible disclosure, and security research workflows.
 
 ---
@@ -59,24 +58,34 @@ setx SHODAN_API_KEY "YOUR_API_KEY_HERE"
 ## 🚀 Usage
 
 Run the script providing a domain as argument:
+
+```bash
 python shodan_domain_recon.py example.com
+```
+
+---
 
 ## 📄 Output
 
 Results are automatically saved to:
+
+```
 results/example.com.txt
+```
 
 The report may include:
 
-📌 Discovered subdomains
-🌍 IP addresses
-🔓 Open ports and exposed services
-🧠 Product and version fingerprints
-🌐 HTTP titles and server headers
-🔐 SSL certificate metadata
-🏢 ASN / ISP / Organization info
+- 📌 Discovered subdomains
+- 🌍 IP addresses
+- 🔓 Open ports and exposed services
+- 🧠 Product and version fingerprints
+- 🌐 HTTP titles and server headers
+- 🔐 SSL certificate metadata
+- 🏢 ASN / ISP / Organization info
 
 ## 🗂️ Project structure
+
+```
 shodan-domain-recon/
 ├── shodan_domain_recon.py
 ├── requirements.txt
@@ -84,15 +93,19 @@ shodan-domain-recon/
 ├── LICENSE
 ├── .gitignore
 └── results/        # created automatically
+```
 
 ## ⚠️ Legal disclaimer
 
-This tool is intended for authorized security testing only.
+This tool is intended for **authorized security testing only**.
 
-Use it only on assets you own or have explicit permission to test.
-The author assumes no responsibility for misuse.
+Use it **only on assets you own or have explicit permission to test**.  
+The author assumes **no responsibility for misuse**.
+
+---
 
 ## 🤝 Contributions
 
 Pull requests, improvements and suggestions are welcome.
+
 If you find this tool useful ⭐ the repository!
